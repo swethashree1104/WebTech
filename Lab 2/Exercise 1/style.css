@@ -1,0 +1,28 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: 0;
+}
+
+h1 {
+    margin-bottom: 30px;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+canvas {
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 15px;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    display: block;
+    margin: 0 auto 30px;
+}
+
+canvas:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}

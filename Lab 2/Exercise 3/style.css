@@ -1,0 +1,126 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.input-section {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+input[type="text"] {
+    padding: 12px;
+    width: 300px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+
+input[type="text"]:focus {
+    border-color: #4A90E2;
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+}
+
+button {
+    padding: 12px 24px;
+    font-size: 16px;
+    background: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: #357ABD;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.board {
+    display: flex;
+    gap: 20px;
+    justify-content: space-around;
+}
+
+.column {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 15px;
+    min-height: 400px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.column:hover {
+    transform: translateY(-5px);
+}
+
+.column h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 18px;
+}
+
+.task {
+    padding: 15px;
+    margin: 10px 0;
+    background: white;
+    border-radius: 10px;
+    cursor: move;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    border-left: 4px solid #4A90E2;
+    user-select: none;
+}
+
+.task:hover {
+    transform: translateX(5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.task.completed {
+    background: #7ED321 !important;
+    color: white;
+    border-left-color: #5AA419;
+}
+
+.task.dragging {
+    opacity: 0.7;
+    transform: rotate(5deg) scale(1.02);
+}
+
+.message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #27AE60;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+    z-index: 1000;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
