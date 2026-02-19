@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Inventory System</title>
+
+<style>
+body{font-family:Arial;text-align:center;background:#eef2f7;}
+h2{color:#2c3e50;}
+
+input{
+padding:8px;
+margin:6px;
+width:180px;
+}
+
+button{
+padding:8px 16px;
+margin:6px;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+.addBtn{background:#27ae60;}
+.refreshBtn{background:#2980b9;}
+.updateBtn{background:#f39c12;}
+.deleteBtn{background:#e74c3c;}
+.searchBtn{background:#8e44ad;}
+
+table{
+margin:auto;
+margin-top:20px;
+width:95%;
+background:white;
+border-collapse:collapse;
+}
+
+th,td{
+padding:10px;
+border:1px solid #aaa;
+}
+
+#msg{font-weight:bold;font-size:18px;}
+</style>
+</head>
+
+<body>
+
+<h2>📦 Product Inventory System</h2>
+
+<input type="number" id="pid" placeholder="Product ID">
+<input type="text" id="pname" placeholder="Name">
+<input type="text" id="category" placeholder="Category">
+<input type="number" id="price" placeholder="Price">
+<input type="number" id="stock" placeholder="Stock">
+
+<br>
+
+<button class="addBtn" onclick="addProduct()">Add Product</button>
+<button class="refreshBtn" onclick="loadProducts()">Refresh</button>
+
+<br>
+
+<input type="text" id="searchCategory" placeholder="Search by Category">
+<button class="searchBtn" onclick="searchCategory()">Search</button>
+
+<p id="msg"></p>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Category</th>
+<th>Price</th>
+<th>Stock</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="productTable"></tbody>
+</table>
+
+<!-- JSON DATA -->
+<script id="jsonData" type="application/json">
+[
+ { "id":101,"name":"Laptop","category":"Electronics","price":55000,"stock":10 },
+ { "id":102,"name":"Chair","category":"Furniture","price":2500,"stock":25 }
+]
+</script>
+
+<script>
+
+let products = [];
+
+// ========== LOAD JSON USING FETCH ==========
+async function loadProducts(){
+
+try{
+
+const jsonText = document.getElementById("jsonData").textContent;
+
+const blob = new Blob([jsonText], {type:"application/json"});
+const url = URL.createObjectURL(blob);
+
+const response = await fetch(url);
+
+products = await response.json();
+
+displayProducts(products);
+
+showMessage("Inventory loaded","green");
+
+}
+catch{
+showMessage("JSON Load Error","red");
+}
+}
+
+loadProducts();
+
+// ========== DISPLAY ==========
+function displayProducts(data){
+
+const table = document.getElementById("productTable");
+table.innerHTML="";
+
+data.forEach(p=>{
+
+table.innerHTML+=`
+<tr>
+<td>${p.id}</td>
+<td>${p.name}</td>
+<td>${p.category}</td>
+<td>${p.price}</td>
+<td>${p.stock}</td>
+<td>
+<button class="updateBtn" onclick="editProduct(${p.id})">Edit</button>
+<button class="deleteBtn" onclick="deleteProduct(${p.id})">Delete</button>
+</td>
+</tr>`;
+});
+}
+
+// ========== VALIDATION ==========
+function validate(){
+
+if(
+pid.value==="" ||
+pname.value==="" ||
+category.value==="" ||
+price.value==="" ||
+stock.value===""
+){
+showMessage("All fields required","red");
+return false;
+}
+
+return true;
+}
+
+// ========== ADD PRODUCT ==========
+function addProduct(){
+
+if(!validate()) return;
+
+let id = parseInt(pid.value);
+
+if(products.some(p=>p.id===id)){
+showMessage("Product ID exists","red");
+return;
+}
+
+products.push({
+id:id,
+name:pname.value,
+category:category.value,
+price:price.value,
+stock:stock.value
+});
+
+displayProducts(products);
+showMessage("Product added","green");
+
+clearFields();
+}
+
+// ========== EDIT ==========
+function editProduct(id){
+
+let product = products.find(p=>p.id===id);
+
+let newPrice = prompt("Enter new price", product.price);
+let newStock = prompt("Enter new stock", product.stock);
+
+if(newPrice) product.price = newPrice;
+if(newStock) product.stock = newStock;
+
+displayProducts(products);
+showMessage("Product updated","green");
+}
+
+// ========== DELETE ==========
+function deleteProduct(id){
+
+products = products.filter(p=>p.id!==id);
+
+displayProducts(products);
+showMessage("Product deleted","green");
+}
+
+// ========== SEARCH ==========
+function searchCategory(){
+
+let key = document.getElementById("searchCategory").value.toLowerCase();
+
+let filtered = products.filter(p =>
+p.category.toLowerCase().includes(key)
+);
+
+displayProducts(filtered);
+}
+
+// ========== CLEAR ==========
+function clearFields(){
+pid.value="";
+pname.value="";
+category.value="";
+price.value="";
+stock.value="";
+}
+
+// ========== MESSAGE ==========
+function showMessage(msg,color){
+const message=document.getElementById("msg");
+message.textContent=msg;
+message.style.color=color;
+}
+
+</script>
+
+</body>
+</html>

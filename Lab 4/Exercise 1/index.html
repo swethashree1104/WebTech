@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Username Availability Checker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        #feedback {
+            min-height: 24px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .available {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .taken {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            color: #007bff;
+            font-style: italic;
+            margin-top: 8px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Register</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required minlength="3" autocomplete="off">
+                <div id="feedback"></div>
+                <div id="loading">
+                    <span class="spinner"></span>Checking...
+                </div>
+            </div>
+            <button type="submit" id="submitBtn" disabled>Register</button>
+        </form>
+    </div>
+
+    <script>
+        // Simulated backend usernames.json data
+        const usernamesData = {
+            "admin": true,
+            "user": true,
+            "guest": true,
+            "test": true,
+            "root": true,
+            "john": false,
+            "jane": false,
+            "bob": false,
+            "alice": false
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const usernameInput = document.getElementById('username');
+            const feedback = document.getElementById('feedback');
+            const loading = document.getElementById('loading');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('registerForm');
+
+            let isAvailable = false;
+            let isChecking = false;
+
+            // Debounce function
+            const debounce = (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func(...args), delay);
+                };
+            };
+
+            // Check username availability (AJAX simulation)
+            const checkUsername = async () => {
+                const username = usernameInput.value.trim().toLowerCase();
+                
+                // Clear for short usernames
+                if (username.length < 3) {
+                    feedback.textContent = '';
+                    feedback.className = '';
+                    isAvailable = false;
+                    updateButton();
+                    return;
+                }
+
+                if (isChecking) return;
+
+                showLoading(true);
+                isChecking = true;
+
+                // Simulate AJAX delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                try {
+                    // Simulate fetch('usernames.json') response
+                    const taken = usernamesData[username] || false;
+                    
+                    if (taken) {
+                        feedback.textContent = 'Username already taken';
+                        feedback.className = 'taken';
+                        isAvailable = false;
+                    } else {
+                        feedback.textContent = 'Username available';
+                        feedback.className = 'available';
+                        isAvailable = true;
+                    }
+                } catch (error) {
+                    feedback.textContent = 'Error checking username';
+                    feedback.className = 'taken';
+                } finally {
+                    showLoading(false);
+                    isChecking = false;
+                    updateButton();
+                }
+            };
+
+            // Event listeners
+            usernameInput.addEventListener('input', debounce(checkUsername, 500));
+
+            const showLoading = (show) => {
+                loading.style.display = show ? 'block' : 'none';
+            };
+
+            const updateButton = () => {
+                const validLength = usernameInput.value.trim().length >= 3;
+                submitBtn.disabled = !isAvailable || isChecking || !validLength;
+            };
+
+            // Form submission
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (!isAvailable) {
+                    feedback.textContent = 'Username unavailable. Choose another.';
+                    feedback.className = 'taken';
+                    return;
+                }
+                alert('Registration successful!');
+                // Reset form
+                usernameInput.value = '';
+                feedback.textContent = '';
+                feedback.className = '';
+                updateButton();
+            });
+        });
+    </script>
+</body>
+</html>

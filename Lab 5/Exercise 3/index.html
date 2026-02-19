@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Record System</title>
+
+<style>
+body{font-family:Arial;text-align:center;background:#f4f6f9;}
+h2{color:#2c3e50;}
+
+input{
+padding:8px;
+margin:6px;
+width:200px;
+}
+
+button{
+padding:8px 18px;
+margin:8px;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+.addBtn{background:#27ae60;}
+.refreshBtn{background:#2980b9;}
+.updateBtn{background:#27ae60;}
+.deleteBtn{background:#e74c3c;}
+
+table{
+margin:auto;
+margin-top:20px;
+width:90%;
+background:white;
+border-collapse:collapse;
+}
+
+th,td{
+padding:10px;
+border:1px solid #aaa;
+}
+
+#msg{
+font-weight:bold;
+font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎓 Student Record System</h2>
+
+<input type="number" id="sid" placeholder="ID">
+<input type="text" id="sname" placeholder="Name">
+<input type="text" id="course" placeholder="Course">
+<input type="number" id="marks" placeholder="Marks">
+
+<br>
+
+<button class="addBtn" onclick="addStudent()">Add Student</button>
+<button class="refreshBtn" onclick="loadStudents()">Refresh</button>
+
+<p id="msg"></p>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Course</th>
+<th>Marks</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="studentTable"></tbody>
+</table>
+
+<!-- JSON DATA -->
+<script id="jsonData" type="application/json">
+[
+ { "id": 1, "name": "Swetha", "course": "BCA", "marks": 85 },
+ { "id": 2, "name": "Arun", "course": "BSc", "marks": 78 }
+]
+</script>
+
+<script>
+
+let students = [];
+
+// ================= LOAD JSON USING FETCH =================
+async function loadStudents(){
+
+try{
+
+// simulate fetch using Blob
+const jsonText = document.getElementById("jsonData").textContent;
+
+const blob = new Blob([jsonText], {type:"application/json"});
+const url = URL.createObjectURL(blob);
+
+const response = await fetch(url);
+
+students = await response.json();
+
+displayStudents();
+
+showMessage("Students loaded successfully","green");
+
+}
+catch{
+showMessage("JSON parsing error!","red");
+}
+}
+
+loadStudents();
+
+// ================= DISPLAY =================
+function displayStudents(){
+
+const table = document.getElementById("studentTable");
+table.innerHTML="";
+
+students.forEach(std=>{
+
+table.innerHTML+=`
+<tr>
+<td>${std.id}</td>
+<td>${std.name}</td>
+<td>${std.course}</td>
+<td>${std.marks}</td>
+<td>
+<button class="updateBtn" onclick="updateStudent(${std.id})">Update</button>
+<button class="deleteBtn" onclick="deleteStudent(${std.id})">Delete</button>
+</td>
+</tr>`;
+});
+}
+
+// ================= VALIDATION =================
+function validate(){
+
+const id = document.getElementById("sid").value.trim();
+const name = document.getElementById("sname").value.trim();
+const course = document.getElementById("course").value.trim();
+const marks = document.getElementById("marks").value.trim();
+
+if(id==="" || name==="" || course==="" || marks===""){
+showMessage("All fields are required","red");
+return false;
+}
+
+return true;
+}
+
+// ================= ADD =================
+function addStudent(){
+
+if(!validate()) return;
+
+const id = parseInt(document.getElementById("sid").value);
+const name = document.getElementById("sname").value;
+const course = document.getElementById("course").value;
+const marks = document.getElementById("marks").value;
+
+if(students.some(s => s.id === id)){
+showMessage("ID already exists","red");
+return;
+}
+
+students.push({id,name,course,marks});
+
+displayStudents();
+showMessage("Student added successfully","green");
+
+clearFields();
+}
+
+// ================= UPDATE =================
+function updateStudent(id){
+
+let student = students.find(s => s.id === id);
+
+let newCourse = prompt("Enter new course", student.course);
+let newMarks = prompt("Enter new marks", student.marks);
+
+if(newCourse) student.course = newCourse;
+if(newMarks) student.marks = newMarks;
+
+displayStudents();
+showMessage("Student updated","green");
+}
+
+// ================= DELETE =================
+function deleteStudent(id){
+
+students = students.filter(s => s.id !== id);
+
+displayStudents();
+showMessage("Student deleted","green");
+}
+
+// ================= CLEAR =================
+function clearFields(){
+document.getElementById("sid").value="";
+document.getElementById("sname").value="";
+document.getElementById("course").value="";
+document.getElementById("marks").value="";
+}
+
+// ================= MESSAGE =================
+function showMessage(msg,color){
+const message=document.getElementById("msg");
+message.textContent=msg;
+message.style.color=color;
+}
+
+</script>
+
+</body>
+</html>

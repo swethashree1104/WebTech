@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJAX Product Search System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .search-section {
+            padding: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 18px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            color: #667eea;
+            font-style: italic;
+        }
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .results-section {
+            padding: 2rem;
+            min-height: 200px;
+        }
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            padding: 3rem;
+        }
+        .products-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .product-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .product-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .product-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 0.5rem;
+        }
+        .product-category {
+            color: #7f8c8d;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Product Search</h1>
+            <p>Start typing to search products instantly</p>
+        </div>
+        
+        <div class="search-section">
+            <input 
+                type="text" 
+                id="searchInput" 
+                class="search-input" 
+                placeholder="Search products (e.g., laptop, phone, shoes...)"
+                autocomplete="off"
+            >
+            <div id="loading">
+                <span class="spinner"></span>Searching products...
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated products.json data (server response)
+        const productsData = [
+            { name: "MacBook Pro 14", price: 1999, category: "Laptops" },
+            { name: "iPhone 15 Pro", price: 999, category: "Smartphones" },
+            { name: "AirPods Pro 2", price: 249, category: "Headphones" },
+            { name: "Dell XPS 13", price: 1299, category: "Laptops" },
+            { name: "Samsung Galaxy S24", price: 899, category: "Smartphones" },
+            { name: "Sony WH-1000XM5", price: 399, category: "Headphones" },
+            { name: "Nike Air Max", price: 129, category: "Shoes" },
+            { name: "Adidas Ultraboost", price: 189, category: "Shoes" },
+            { name: "iPad Pro 12.9", price: 1099, category: "Tablets" },
+            { name: "Surface Laptop 5", price: 999, category: "Laptops" },
+            { name: "Google Pixel 8", price: 699, category: "Smartphones" },
+            { name: "Apple Watch Ultra", price: 799, category: "Smartwatches" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+
+            let debounceTimer;
+
+            // Debounce search function
+            function debounceSearch(query) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => performSearch(query), 300);
+            }
+
+            // Simulate AJAX call to server
+            async function performSearch(query) {
+                if (!query || query.length < 2) {
+                    resultsDiv.innerHTML = '';
+                    return;
+                }
+
+                showLoading(true);
+
+                try {
+                    // Simulate network delay
+                    await new Promise(resolve => setTimeout(resolve, 600));
+
+                    // Filter products (simulates server-side JSON response)
+                    const filteredProducts = productsData.filter(product =>
+                        product.name.toLowerCase().includes(query.toLowerCase()) ||
+                        product.category.toLowerCase().includes(query.toLowerCase())
+                    );
+
+                    displayResults(filteredProducts);
+
+                } catch (error) {
+                    showError('Failed to fetch products. Please try again.');
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // Display search results
+            function displayResults(products) {
+                if (products.length === 0) {
+                    resultsDiv.innerHTML = '<div class="no-results">No results found</div>';
+                    return;
+                }
+
+                const productsHTML = products.map(product => `
+                    <div class="product-card">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">$${product.price}</div>
+                        <div class="product-category">${product.category}</div>
+                    </div>
+                `).join('');
+
+                resultsDiv.innerHTML = `<div class="products-grid">${productsHTML}</div>`;
+            }
+
+            // Show loading indicator
+            function showLoading(show) {
+                loadingDiv.style.display = show ? 'block' : 'none';
+            }
+
+            // Show error message
+            function showError(message) {
+                resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+            }
+
+            // Search input event listener
+            searchInput.addEventListener('input', (e) => {
+                debounceSearch(e.target.value.trim());
+            });
+        });
+    </script>
+</body>
+</html>

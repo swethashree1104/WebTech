@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Library Book Tracker</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+h2{ color:#2c3e50; }
+
+input, select{
+    padding:8px;
+    margin:6px;
+    width:200px;
+}
+
+button{
+    padding:8px 18px;
+    margin:8px;
+    border:none;
+    color:white;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.addBtn{ background:#27ae60; }
+.refreshBtn{ background:#16a085; }
+.updateBtn{ background:#27ae60; }
+.deleteBtn{ background:#e74c3c; }
+
+button:hover{ opacity:0.85; }
+
+table{
+    margin:auto;
+    margin-top:20px;
+    width:90%;
+    background:white;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:10px;
+    border:1px solid #aaa;
+}
+
+#msg{
+    font-weight:bold;
+    font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📚 Library Book Tracker</h2>
+
+<input type="number" id="bookId" placeholder="Book ID">
+<input type="text" id="title" placeholder="Title">
+<input type="text" id="author" placeholder="Author">
+
+<select id="status">
+<option value="">Select Status</option>
+<option value="Available">Available</option>
+<option value="Issued">Issued</option>
+</select>
+
+<br>
+
+<button class="addBtn" onclick="addBook()">Add Book</button>
+<button class="refreshBtn" onclick="loadBooks()">Refresh</button>
+
+<p id="msg"></p>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Title</th>
+<th>Author</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="bookTable"></tbody>
+</table>
+
+<!-- XML DATA -->
+<script id="xmlData" type="text/xml">
+<books>
+    <book>
+        <id>1</id>
+        <title>Java Programming</title>
+        <author>James Gosling</author>
+        <status>Issued</status>
+    </book>
+
+    <book>
+        <id>2</id>
+        <title>Python Basics</title>
+        <author>Guido Rossum</author>
+        <status>Issued</status>
+    </book>
+</books>
+</script>
+
+<script>
+
+let xmlDoc;
+
+// ================= LOAD XML =================
+function loadBooks(){
+
+    const xmlText = document.getElementById("xmlData").textContent;
+    const parser = new DOMParser();
+    xmlDoc = parser.parseFromString(xmlText,"text/xml");
+
+    if(xmlDoc.getElementsByTagName("parsererror").length){
+        showMessage("Malformed XML!", "red");
+        return;
+    }
+
+    displayBooks();
+}
+
+loadBooks();
+
+// ================= DISPLAY =================
+function displayBooks(){
+
+    const books = xmlDoc.getElementsByTagName("book");
+    const table = document.getElementById("bookTable");
+    table.innerHTML="";
+
+    if(books.length === 0){
+        showMessage("No books found!", "red");
+        return;
+    }
+
+    for(let book of books){
+
+        let id = book.getElementsByTagName("id")[0].textContent;
+        let title = book.getElementsByTagName("title")[0].textContent;
+        let author = book.getElementsByTagName("author")[0].textContent;
+        let status = book.getElementsByTagName("status")[0].textContent;
+
+        table.innerHTML += `
+        <tr>
+            <td>${id}</td>
+            <td>${title}</td>
+            <td>${author}</td>
+            <td>${status}</td>
+            <td>
+                <button class="updateBtn" onclick="updateStatus(${id})">Update</button>
+                <button class="deleteBtn" onclick="deleteBook(${id})">Delete</button>
+            </td>
+        </tr>`;
+    }
+
+    showMessage("Books loaded successfully!", "green");
+}
+
+// ================= VALIDATION =================
+function validate(){
+
+    const id = document.getElementById("bookId").value.trim();
+    const title = document.getElementById("title").value.trim();
+    const author = document.getElementById("author").value.trim();
+    const status = document.getElementById("status").value;
+
+    if(id === "" || title === "" || author === "" || status === ""){
+        showMessage("All fields are required!", "red");
+        return false;
+    }
+
+    return true;
+}
+
+// ================= ADD BOOK =================
+function addBook(){
+
+    if(!validate()) return;
+
+    const id = document.getElementById("bookId").value.trim();
+    const titleVal = document.getElementById("title").value.trim();
+    const authorVal = document.getElementById("author").value.trim();
+    const statusVal = document.getElementById("status").value;
+
+    let books = xmlDoc.getElementsByTagName("book");
+
+    for(let b of books){
+        if(b.getElementsByTagName("id")[0].textContent === id){
+            showMessage("Book ID already exists!", "red");
+            return;
+        }
+    }
+
+    let newBook = xmlDoc.createElement("book");
+
+    newBook.innerHTML = `
+        <id>${id}</id>
+        <title>${titleVal}</title>
+        <author>${authorVal}</author>
+        <status>${statusVal}</status>
+    `;
+
+    xmlDoc.getElementsByTagName("books")[0].appendChild(newBook);
+
+    displayBooks();
+    showMessage("Book added successfully!", "green");
+
+    // Clear fields
+    document.getElementById("bookId").value="";
+    document.getElementById("title").value="";
+    document.getElementById("author").value="";
+    document.getElementById("status").value="";
+}
+
+// ================= UPDATE =================
+function updateStatus(id){
+
+    let books = xmlDoc.getElementsByTagName("book");
+
+    for(let book of books){
+
+        if(book.getElementsByTagName("id")[0].textContent == id){
+
+            let newStatus = prompt("Enter new status (Available/Issued)");
+
+            if(newStatus === "Available" || newStatus === "Issued"){
+                book.getElementsByTagName("status")[0].textContent = newStatus;
+                showMessage("Status updated!", "green");
+            }
+            else{
+                showMessage("Invalid status!", "red");
+            }
+        }
+    }
+
+    displayBooks();
+}
+
+// ================= DELETE =================
+function deleteBook(id){
+
+    let books = xmlDoc.getElementsByTagName("book");
+
+    for(let book of books){
+        if(book.getElementsByTagName("id")[0].textContent == id){
+            book.remove();
+        }
+    }
+
+    displayBooks();
+    showMessage("Book deleted!", "green");
+}
+
+// ================= MESSAGE =================
+function showMessage(msg,color){
+    const message = document.getElementById("msg");
+    message.textContent = msg;
+    message.style.color = color;
+}
+
+</script>
+
+</body>
+</html>
