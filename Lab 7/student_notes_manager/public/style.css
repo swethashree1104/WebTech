@@ -1,0 +1,37 @@
+body{
+font-family: Arial;
+background:#f4f4f4;
+margin:40px;
+}
+
+h1{
+color:#333;
+}
+
+input, textarea{
+display:block;
+width:300px;
+padding:8px;
+margin:10px 0;
+}
+
+button{
+padding:8px 15px;
+background:#007bff;
+color:white;
+border:none;
+cursor:pointer;
+margin:5px;
+}
+
+button:hover{
+background:#0056b3;
+}
+
+.note{
+background:white;
+padding:15px;
+margin-top:10px;
+border-radius:5px;
+box-shadow:0 0 5px gray;
+}

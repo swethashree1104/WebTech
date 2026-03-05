@@ -1,0 +1,28 @@
+{
+  "books": [
+	{
+	  "title":"JavaScript Essentials",
+	  "author":"John Smith",
+	  "category":"Programming",
+	  "price":450,
+	  "rating":4.5,
+	  "year":2023
+	},
+	{
+	  "title":"Python Basics",
+	  "author":"David Lee",
+	  "category":"Programming",
+	  "price":500,
+	  "rating":4.7,
+	  "year":2022
+	},
+	{
+	  "title":"History of India",
+	  "author":"R.K Sharma",
+	  "category":"History",
+	  "price":350,
+	  "rating":4.2,
+	  "year":2020
+	}
+  ]
+}
